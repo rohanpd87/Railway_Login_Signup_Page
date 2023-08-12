@@ -1,0 +1,94 @@
+config.php
+login.php
+register.php
+welcome.php
+logout.php
+
+<?php
+require_once "config.php";
+$username = $password = $confirm_password ="";
+$username_err = $password_err = $confirm_password_err ="";
+if($_SERVER['REQUEST_METHOD']=="POST")
+{
+    //check ifusername is empty
+    if(empty(trim($_POST["username"]))){
+        $username_err = "Username can't be blank";
+    }
+    else{
+        $sql="SELECT id from users where username = ?";
+        $stmt=mysqli_prepare($link, $sql);
+        if($stmt=mysqli_prepare("SELECT id from users where username = ?"))
+        {
+            mysqli_stmt_bind_param($stmt, "s", param.username);
+            //set value ofparam username
+            $param_username=trim($_POST["username"]);
+            //try to execute this statement
+            if(mysqli_stmt_execute($stmt))
+            {
+                mysqli_stmt_store_result($stmt);
+                if(mysqli_stmt_num_rows($stmt)==1)
+                {
+                    $username_err="This username is already taken";
+                }
+                else
+                {
+                    $username=trim($_POST['username']);
+                }
+            }
+            else{
+                echo "something went wrong!";
+            }
+        }
+    }
+    mysqli_stmt_close($stmt);
+
+
+// Check for password
+if(empty(trim($_POST['password']))){
+    $password_err="password can't be blank";
+}
+else if(strlen(trim($_POST['password'])) < 8){
+    $password_err="password can't be < 8 characters";
+}
+else{
+    $password=trim($_POST['password']);
+}
+// Check for confirm password field
+if(trim($_POST['password']) != trim($_POST['confirm_password'])){
+    $password_err="password should match";
+}
+// If there were no errors, go ahead & insert into the database
+if(empty($username_err) && empty($password_err) && empty($confirm_password_err)){
+    $sql="INSERT INTO users (First_Name, Last_Name, username, password, Aadhar_No, Gender, email_id, Mobile, City, State) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $stmt = mysqli_prepare($conn, $sql);
+    if($stmt){
+        mysqli_stmt_bind_param($stmt, "ssssssssss", $param_First_Name, $param_First_Name, $param_username, $param_password, $param_Aadhar_No, $param_Gender, $param_email_id, $param_Mobile, $param_City, $param_State);
+        //SET PARAMETERS
+        $param_First_Name = $First_Name;
+        $param_Last_Name = $Last_Name;
+        $param_username = $username;
+        $param_password = password_hash($password, PASSWORD_DEFAULT);
+        $param_Aadhar_No = $Aadhar_No;
+        $param_Gender = $Gender;
+        $param_email_id = $email_id;
+        $param_Mobile = $email_id;
+        $param_City = $City;
+        $param_State = $State;
+        // TRY to execute the query
+        if (mysqli_stmt_execute($stmt)){
+            header("location: login.php");
+        }
+        else{
+            echo "Something went wrong... can't redirect!";
+        }
+    }
+    mysqli_stmt_close($stmt);
+}
+mysqi_close($conn);
+}
+?>
+<?php if (isset($_SESSION["user_id"])): ?>
+            <ul class="nav navbar-nav navbar-right">        <li><span class="glyphicon glyphicon-user"></span> Hi, User</li></ul>
+        <?php else: ?>
+            <ul class="nav navbar-nav navbar-right">        <li><a href="\HTML_Tutorial\reg1.php"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>        <li><a href="\HTML_Tutorial\login.php"><span class="glyphicon glyphicon-log-in"></span> Login</a></li></ul>
+        <?php endif; ?>
